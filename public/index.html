@@ -111,9 +111,13 @@ if (!prompt) { showError('请输入文字描述！'); return; }
 hideError(); hideImage(); showLoading(); disableButton();
 try {
 const response = await fetch('/api/generate', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ prompt: prompt })
+    method: 'POST',
+    headers: { 
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        prompt: prompt
+    })
 });
 if (!response.ok) throw new Error('生成失败，请稍后重试');
 const data = await response.json();
