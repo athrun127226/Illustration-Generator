@@ -110,7 +110,7 @@ const prompt = promptInput.value.trim();
 if (!prompt) { showError('请输入文字描述！'); return; }
 hideError(); hideImage(); showLoading(); disableButton();
 try {
-const response = await fetch('/api/generate', {
+const response = await fetch('https://illustration-generator-x.vercel.app/api/generate', {
     method: 'POST',
     headers: { 
         'Content-Type': 'application/json'
