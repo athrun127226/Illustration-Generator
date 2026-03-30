@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>插图生成器 - Illustration Generator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 { text-align: center; color: #333; margin-bottom: 10px; font-size: 2.5em; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 30px; font-size: 1.1em; }
+        .input-section { margin-bottom: 30px; }
+        label { display: block; margin-bottom: 10px; color: #333; font-weight: 600; font-size: 1.1em; }
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1em;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.3s;
+        }
+        textarea:focus { outline: none; border-color: #667eea; }
+        .generate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        .generate-btn:active { transform: translateY(0); }
+        .generate-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .result-section { margin-top: 30px; text-align: center; }
+        .image-container {
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+        }
+        .image-container img { width: 100%; height: auto; display: block; }
+        .loading { display: none; margin-top: 20px; }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text { margin-top: 15px; color: #666; font-size: 1.1em; }
+        .error-message {
+            background: #fee; color: #c33; padding: 15px; border-radius: 10px;
+            margin-top: 20px; display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 插图生成器</h1>
+        <p class="subtitle">输入文字描述，AI 为你生成精美插图</p>
+        <div class="input-section">
+            <label for="prompt">描述你想要的画面：</label>
+            <textarea id="prompt" placeholder="例如：一只可爱的猫咪坐在彩虹上，卡通风格，色彩鲜艳..." rows="4"></textarea>
+        </div>
+        <button class="generate-btn" onclick="generateImage()">✨ 生成插图</button>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p class="loading-text">正在绘制中，请稍候...</p>
+        </div>
+        <div class="error-message" id="errorMessage"></div>
+<div class="result-section">
+<div class="image-container" id="imageContainer">
+<img id="generatedImage" alt="生成的插图" />
+</div>
+</div>
+</div>
+<script>
+async function generateImage() {
+const promptInput = document.getElementById('prompt');
+const prompt = promptInput.value.trim();
+if (!prompt) { showError('请输入文字描述！'); return; }
+hideError(); hideImage(); showLoading(); disableButton();
+try {
+const response = await fetch('/api/generate', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ prompt: prompt })
+});
+if (!response.ok) throw new Error('生成失败，请稍后重试');
+const data = await response.json();
+showImage(data.imageUrl);
+} catch (error) {
+showError('生成失败：' + error.message);
+} finally {
+hideLoading(); enableButton();
+}
+}
+function showLoading() { document.getElementById('loading').style.display = 'block'; }
+function hideLoading() { document.getElementById('loading').style.display = 'none'; }
+function showImage(url) {
+const img = document.getElementById('generatedImage');
+const container = document.getElementById('imageContainer');
+img.src = url; container.style.display = 'block';
+}
+function hideImage() { document.getElementById('imageContainer').style.display = 'none'; }
+function showError(message) {
+const errorDiv = document.getElementById('errorMessage');
+errorDiv.textContent = message; errorDiv.style.display = 'block';
+}
+function hideError() { document.getElementById('errorMessage').style.display = 'none'; }
+function disableButton() { document.querySelector('.generate-btn').disabled = true; }
+function enableButton() { document.querySelector('.generate-btn').disabled = false; }
+document.getElementById('prompt').addEventListener('keydown', function(e) {
+if (e.ctrlKey && e.key === 'Enter') generateImage();
+});
+</script>
+</body>
+</html>
