@@ -27,6 +27,8 @@ export default async function handler(req, res) {
   
   // 查找或创建用户
   async function upsertUser(userInfo, token) {
+    const userId = userInfo.id || userInfo.sub || userInfo.email;
+    
     // 先查询用户是否存在
     const searchResponse = await fetch(`https://open.feishu.cn/open-apis/bitable/v1/apps/${BITABLE_TOKEN}/tables/${TABLE_ID}/records`, {
       headers: { 
@@ -38,7 +40,7 @@ export default async function handler(req, res) {
     
     // 检查用户是否已存在
     const existingUser = searchData.data?.items?.find(item => 
-      item.fields.user_id === userInfo.sub || item.fields.email === userInfo.email
+      item.fields.user_id === userId || item.fields.email === userInfo.email
     );
     
     if (existingUser) {
@@ -68,7 +70,7 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           fields: {
-            user_id: userInfo.sub,
+            user_id: userId,
             email: userInfo.email,
             name: userInfo.name,
             picture: userInfo.picture
@@ -107,25 +109,26 @@ export default async function handler(req, res) {
       // 3. 同步用户到飞书多维表格
       let feishuToken;
       try {
-        feishuToken = await getFeishuToken();
-        await upsertUser(userInfo, feishuToken);
+        if (BITABLE_APP_ID && BITABLE_APP_SECRET) {
+          feishuToken = await getFeishuToken();
+          await upsertUser(userInfo, feishuToken);
+        }
       } catch (e) {
-        console.log('飞书同步失败:', e.message);
-      }
-      
-      // 4. 返回给前端
-res.status(200).json({
-success: true,
-tokens,
-user: {
-id: userInfo.sub,
-email: userInfo.email,
-name: userInfo.name,
-picture: userInfo.picture
+console.log('飞书同步失败:', e.message);
 }
-});
+  // 4. 返回给前端
+  res.status(200).json({ 
+    success: true, 
+    tokens, 
+    user: {
+      id: userInfo.id,
+      email: userInfo.email,
+      name: userInfo.name,
+      picture: userInfo.picture
+    }
+  });
 } catch (error) {
-res.status(500).json({ error: error.message });
+  res.status(500).json({ error: error.message });
 }
 } else if (req.method === 'GET') {
 // 生成授权 URL
