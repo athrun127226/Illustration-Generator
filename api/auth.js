@@ -1,19 +1,33 @@
-import { OAuth2Client } from 'google-auth-library';
-
-const client = new OAuth2Client(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  `${process.env.NEXTAUTH_URL}/api/auth/callback`
-);
-
 export default async function handler(req, res) {
   const { code } = req.query;
   
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const redirectUri = `${process.env.NEXTAUTH_URL}/api/auth/callback`;
+  
   if (req.method === 'GET' && code) {
     try {
-      const { tokens } = await client.getToken(code);
-      client.setCredentials(tokens);
-      const userInfo = await client.getTokenInfo(tokens.access_token);
+      // 用 code 换取 token
+      const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          code: code,
+          client_id: clientId,
+          client_secret: clientSecret,
+          redirect_uri: redirectUri,
+          grant_type: 'authorization_code'
+        })
+      });
+      
+      const tokens = await tokenResponse.json();
+      
+      // 获取用户信息
+      const userResponse = await fetch(`https://www.googleapis.com/oauth2/v2/userinfo?alt=json`, {
+        headers: { 'Authorization': `Bearer ${tokens.access_token}` }
+      });
+      
+      const userInfo = await userResponse.json();
       
       res.status(200).json({ 
         success: true, 
@@ -28,10 +42,16 @@ export default async function handler(req, res) {
       res.status(500).json({ error: error.message });
     }
   } else if (req.method === 'GET') {
-    const authUrl = client.generateAuthUrl({
-      access_type: 'offline',
-      scope: ['openid', 'email', 'profile'],
-    });
+    // 生成授权 URL
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` + 
+      new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        response_type: 'code',
+        scope: 'openid email profile',
+        access_type: 'offline'
+      });
+    
     res.redirect(authUrl);
   } else {
     res.status(405).json({ error: 'Method not allowed' });
