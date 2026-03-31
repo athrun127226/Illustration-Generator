@@ -13,11 +13,10 @@
         label { display: block; margin-bottom: 8px; color: #555; font-weight: 500; }
         input[type="text"] { width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; }
         input[type="text"]:focus { outline: none; border-color: #667eea; }
-        button { width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        button { width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: 600; cursor: pointer; }
         button:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4); }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
         .login-btn { background: #4285F4; margin-top: 15px; }
-        .logout-btn { background: #666; padding: 8px 16px; font-size: 14px; width: auto; }
         .btn-small { padding: 10px 20px; font-size: 14px; width: auto; margin: 5px; }
         #result { margin-top: 30px; text-align: center; min-height: 200px; }
         #result img { max-width: 100%; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
@@ -27,7 +26,7 @@
         #userInfo img { width: 50px; height: 50px; border-radius: 50%; }
         #userName { margin: 10px 0; color: #333; font-weight: 500; }
         .nav-links { margin-top: 10px; }
-        .nav-links a { margin: 0 10px; color: #667eea; text-decoration: none; }
+        .nav-links a { margin: 0 10px; color: #667eea; text-decoration: none; cursor: pointer; }
         .profile-section { text-align: center; padding: 20px; }
         .profile-section img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; }
         .profile-section .name { font-size: 24px; font-weight: bold; margin: 15px 0 5px; }
@@ -35,8 +34,7 @@
     </style>
 </head>
 <body>
-    <div class="container" id="mainContainer">
-        <!-- 首页内容 -->
+    <div class="container">
         <div id="homePage">
             <h1>🎨 AI 插图生成器</h1>
             <div class="input-group">
@@ -51,46 +49,65 @@
                 <img id="userAvatar" src="" alt="用户头像">
                 <p id="userName"></p>
                 <div class="nav-links">
-                    <a href="#" onclick="showProfile()">📖 个人中心</a>
+                    <a onclick="showProfile()">📖 个人中心</a>
                     <span>|</span>
-                    <a href="javascript:logout()">🚪 退出</a>
+                    <a onclick="logout()">🚪 退出</a>
                 </div>
             </div>
-<div id="result"></div>
-</div>
-    <!-- 个人中心内容 -->
-    <div id="profilePage" style="display: none;">
-        <h1>👤 个人中心</h1>
-        <div class="profile-section">
-            <img id="profileAvatar" src="" alt="头像">
-            <p id="profileName" class="name"></p>
-            <p id="profileEmail" class="email"></p>
-            <div>
-                <button onclick="showHome()" class="btn-small" style="background: #4CAF50;">🏠 返回首页</button>
-                <button onclick="logout()" class="btn-small" style="background: #f44336;">🚪 退出登录</button>
-            </div>
+            <div id="result"></div>
         </div>
-    </div>
+        <div id="profilePage" style="display: none;">
+            <h1>👤 个人中心</h1>
+<div class="profile-section">
+<img id="profileAvatar" src="" alt="头像">
+<p id="profileName" class="name"></p>
+<p id="profileEmail" class="email"></p>
+<div>
+<button onclick="showHome()" class="btn-small" style="background: #4CAF50;">🏠 返回首页</button>
+<button onclick="logout()" class="btn-small" style="background: #f44336;">🚪 退出登录</button>
+</div>
+</div>
+</div>
 </div>
 <script>
-    // 检查登录状态
+const CLIENT_ID = '107777842538-ksu0b41ggb6ls42f2k7v4f20tes9ki6u.apps.googleusercontent.com';
+const REDIRECT_URI = window.location.origin + '/';
     window.onload = function() {
+        const hash = window.location.hash;
+        if (hash && hash.includes('access_token')) {
+            handleOAuthCallback(hash);
+        }
         const user = localStorage.getItem('user');
-        if (user) {
-            showUserInfo(JSON.parse(user));
-        }
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-        if (code) {
-            handleAuthCallback(code);
-        }
-        
-        // 检查是否显示个人中心
-        if (window.location.hash === '#profile') {
-            showProfile();
-        }
+        if (user) { showUserInfo(JSON.parse(user)); }
     };
+    
+    function loginWithGoogle() {
+        const authUrl = 'https://accounts.google.com/o/oauth2/v2/auth?' +
+            'client_id=' + CLIENT_ID +
+            '&redirect_uri=' + encodeURIComponent(REDIRECT_URI) +
+            '&response_type=token' +
+            '&scope=email profile openid' +
+            '&access_type=offline';
+        window.location.href = authUrl;
+    }
+    
+    function handleOAuthCallback(hash) {
+        const params = new URLSearchParams(hash.substring(1));
+        const accessToken = params.get('access_token');
+        if (accessToken) {
+            fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+                headers: { 'Authorization': 'Bearer ' + accessToken }
+            })
+            .then(res => res.json())
+            .then(user => {
+                localStorage.setItem('token', accessToken);
+                localStorage.setItem('user', JSON.stringify(user));
+                showUserInfo(user);
+                window.location.hash = '';
+            })
+            .catch(err => { alert('登录失败: ' + err.message); });
+        }
+    }
     
     function showHome() {
         document.getElementById('homePage').style.display = 'block';
@@ -99,36 +116,13 @@
     
     function showProfile() {
         const user = localStorage.getItem('user');
-        if (!user) {
-            alert('请先登录！');
-            return;
-        }
+        if (!user) { alert('请先登录！'); return; }
         const userData = JSON.parse(user);
         document.getElementById('profileAvatar').src = userData.picture || 'https://via.placeholder.com/100';
         document.getElementById('profileName').textContent = userData.name || '未设置名字';
         document.getElementById('profileEmail').textContent = userData.email || '';
-        
         document.getElementById('homePage').style.display = 'none';
         document.getElementById('profilePage').style.display = 'block';
-    }
-    
-    function loginWithGoogle() {
-        window.location.href = '/api/auth';
-    }
-    
-    async function handleAuthCallback(code) {
-        try {
-            const res = await fetch(`/api/auth?code=${code}`);
-            const data = await res.json();
-            if (data.success) {
-                localStorage.setItem('token', JSON.stringify(data.tokens));
-                localStorage.setItem('user', JSON.stringify(data.user));
-                showUserInfo(data.user);
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-        } catch (error) {
-            alert('登录失败: ' + error.message);
-        }
     }
     
     function showUserInfo(user) {
@@ -147,36 +141,24 @@
     }
     
     async function generateImage() {
-        const promptInput = document.getElementById('prompt');
-        const resultDiv = document.getElementById('result');
-        const btn = document.getElementById('generateBtn');
-        const prompt = promptInput.value.trim();
-        
+        const prompt = document.getElementById('prompt').value.trim();
         if (!prompt) { alert('请输入文字描述！'); return; }
+const resultDiv = document.getElementById('result');
+const btn = document.getElementById('generateBtn');
 resultDiv.innerHTML = '<p class="loading">🎨 正在生成图片...</p>';
 btn.disabled = true;
 btn.textContent = '生成中...';
-        try {
-            const encodedPrompt = encodeURIComponent(prompt);
-            const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&nologo=true&seed=${Math.random()}`;
-            resultDiv.innerHTML = `<img src="${imageUrl}" alt="AI生成的图片" onload="onImageLoad()" onerror="onImageError()">`;
-        } catch (error) {
-            resultDiv.innerHTML = `<p class="error">❌ 生成失败：${error.message}</p>`;
-            btn.disabled = false;
-            btn.textContent = '生成插图';
-        }
-    }
-    
-    function onImageLoad() {
-        document.getElementById('generateBtn').disabled = false;
-        document.getElementById('generateBtn').textContent = '生成插图';
-    }
-    
-    function onImageError() {
-        document.getElementById('result').innerHTML = '<p class="error">❌ 图片加载失败，请重试</p>';
-        document.getElementById('generateBtn').disabled = false;
-        document.getElementById('generateBtn').textContent = '生成插图';
-    }
+try {
+const imageUrl = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt) + '?width=512&height=512&nologo=true&seed=' + Math.random();
+resultDiv.innerHTML = '<img src="' + imageUrl + '" onload="onImageLoad()" onerror="onImageError()">';
+} catch (error) {
+resultDiv.innerHTML = '<p class="error">❌ 生成失败：' + error.message + '</p>';
+btn.disabled = false;
+btn.textContent = '生成插图';
+}
+}
+    function onImageLoad() { document.getElementById('generateBtn').disabled = false; document.getElementById('generateBtn').textContent = '生成插图'; }
+    function onImageError() { document.getElementById('result').innerHTML = '<p class="error">❌ 图片加载失败</p>'; document.getElementById('generateBtn').disabled = false; document.getElementById('generateBtn').textContent = '生成插图'; }
 </script>
 </body>
 </html>
