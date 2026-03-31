@@ -89,6 +89,18 @@
             cursor: not-allowed;
         }
         
+        .login-btn {
+            background: #4285F4;
+            margin-top: 15px;
+        }
+        
+        .logout-btn {
+            background: #666;
+            padding: 8px 16px;
+            font-size: 14px;
+            width: auto;
+        }
+        
         #result {
             margin-top: 30px;
             text-align: center;
@@ -116,48 +128,120 @@
             border-radius: 8px;
         }
         
-        .success {
-            color: #27ae60;
+        #userInfo {
+            margin-top: 15px;
+            text-align: center;
             padding: 15px;
-            background: #eafff0;
-            border-radius: 8px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+        
+        #userInfo img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+        
+        #userName {
+            margin: 10px 0;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .login-section {
+            margin-top: 15px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎨 AI 插图生成器</h1>
-        
-        <div class="input-group">
-            <label for="prompt">描述你想要的图片：</label>
-            <input type="text" id="prompt" placeholder="例如：一只可爱的猫咪坐在彩虹上" onkeydown="if(event.key==='Enter')generateImage()">
-        </div>
-        
-        <button onclick="generateImage()" id="generateBtn">生成插图</button>
-        
-        <div id="result"></div>
+<h1>🎨 AI 插图生成器</h1>
+    <div class="input-group">
+        <label for="prompt">描述你想要的图片：</label>
+        <input type="text" id="prompt" placeholder="例如：一只可爱的猫咪坐在彩虹上" onkeydown="if(event.key==='Enter')generateImage()">
     </div>
-
-    <script>
-        async function generateImage() {
-            const promptInput = document.getElementById('prompt');
-            const resultDiv = document.getElementById('result');
-            const btn = document.getElementById('generateBtn');
-回复 澪Alex: 
-我不确定替换哪段 ，直接帮我生成完整的
-const prompt = promptInput.value.trim();
+    
+    <button onclick="generateImage()" id="generateBtn">生成插图</button>
+    
+    <div class="login-section">
+        <button onclick="loginWithGoogle()" class="login-btn" id="loginBtn">
+            使用 Google 账号登录
+        </button>
+    </div>
+    
+    <div id="userInfo" style="display: none;">
+        <img id="userAvatar" src="" alt="用户头像">
+        <p id="userName"></p>
+        <button onclick="logout()" class="logout-btn">退出登录</button>
+    </div>
+    
+    <div id="result"></div>
+</div>
+<script>
+    window.onload = function() {
+        const user = localStorage.getItem('user');
+        if (user) {
+            showUserInfo(JSON.parse(user));
+        }
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        if (code) {
+            handleAuthCallback(code);
+        }
+    };
+    
+    function loginWithGoogle() {
+        window.location.href = '/api/auth';
+    }
+    
+    async function handleAuthCallback(code) {
+        try {
+            const res = await fetch(`/api/auth?code=${code}`);
+            const data = await res.json();
+            if (data.success) {
+                localStorage.setItem('token', JSON.stringify(data.tokens));
+                localStorage.setItem('user', JSON.stringify(data.user));
+                showUserInfo(data.user);
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        } catch (error) {
+            alert('登录失败: ' + error.message);
+        }
+    }
+    
+    function showUserInfo(user) {
+        document.getElementById('userInfo').style.display = 'block';
+        document.getElementById('loginBtn').style.display = 'none';
+        document.getElementById('userAvatar').src = user.picture || 'https://via.placeholder.com/50';
+        document.getElementById('userName').textContent = user.name || user.email;
+    }
+    
+    function logout() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        document.getElementById('userInfo').style.display = 'none';
+        document.getElementById('loginBtn').style.display = 'block';
+    }
+    
+    async function generateImage() {
+        const promptInput = document.getElementById('prompt');
+        const resultDiv = document.getElementById('result');
+        const btn = document.getElementById('generateBtn');
+        
+        const prompt = promptInput.value.trim();
+        
         if (!prompt) {
             alert('请输入文字描述！');
             return;
         }
         
-        // 显示加载状态
         resultDiv.innerHTML = '<p class="loading">🎨 正在生成图片...</p>';
         btn.disabled = true;
         btn.textContent = '生成中...';
         
         try {
-            // 直接调用 Pollinations API，不需要后端！
             const encodedPrompt = encodeURIComponent(prompt);
             const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&nologo=true&seed=${Math.random()}`;
             
@@ -172,10 +256,9 @@ const prompt = promptInput.value.trim();
     
     function onImageLoad() {
         const btn = document.getElementById('generateBtn');
-        btn.disabled = false;
-        btn.textContent = '生成插图';
-    }
-    
+btn.disabled = false;
+btn.textContent = '生成插图';
+}
     function onImageError() {
         const resultDiv = document.getElementById('result');
         const btn = document.getElementById('generateBtn');
