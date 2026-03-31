@@ -4,7 +4,11 @@
   "type": "module",
   "scripts": {
     "dev": "vercel dev",
-    "start": "vercel dev"
+    "start": "vercel dev",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev"
   },
-  "dependencies": {}
+  "devDependencies": {
+    "wrangler": "^4.78.0"
+  }
 }
