@@ -5,180 +5,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 插图生成器</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 600px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-        
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 28px;
-        }
-        
-        .input-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-weight: 500;
-        }
-        
-        input[type="text"] {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        
-        input[type="text"]:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        button {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-        }
-        
-        button:active {
-            transform: translateY(0);
-        }
-        
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        
-        .login-btn {
-            background: #4285F4;
-            margin-top: 15px;
-        }
-        
-        .logout-btn {
-            background: #666;
-            padding: 8px 16px;
-            font-size: 14px;
-            width: auto;
-        }
-        
-        #result {
-            margin-top: 30px;
-            text-align: center;
-            min-height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        #result img {
-            max-width: 100%;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        
-        .loading {
-            color: #666;
-            font-size: 16px;
-        }
-        
-        .error {
-            color: #e74c3c;
-            padding: 15px;
-            background: #ffeaea;
-            border-radius: 8px;
-        }
-        
-        #userInfo {
-            margin-top: 15px;
-            text-align: center;
-            padding: 15px;
-            background: #f5f5f5;
-            border-radius: 10px;
-        }
-        
-        #userInfo img {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-        }
-        
-        #userName {
-            margin: 10px 0;
-            color: #333;
-            font-weight: 500;
-        }
-        
-        .login-section {
-            margin-top: 15px;
-            text-align: center;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { background: white; border-radius: 20px; padding: 40px; max-width: 600px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        h1 { text-align: center; color: #333; margin-bottom: 30px; font-size: 28px; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #555; font-weight: 500; }
+        input[type="text"] { width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; }
+        input[type="text"]:focus { outline: none; border-color: #667eea; }
+        button { width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .login-btn { background: #4285F4; margin-top: 15px; }
+        .logout-btn { background: #666; padding: 8px 16px; font-size: 14px; width: auto; }
+        .btn-small { padding: 10px 20px; font-size: 14px; width: auto; margin: 5px; }
+        #result { margin-top: 30px; text-align: center; min-height: 200px; }
+        #result img { max-width: 100%; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .loading { color: #666; font-size: 16px; }
+        .error { color: #e74c3c; padding: 15px; background: #ffeaea; border-radius: 8px; }
+        #userInfo { margin-top: 15px; text-align: center; padding: 15px; background: #f5f5f5; border-radius: 10px; }
+        #userInfo img { width: 50px; height: 50px; border-radius: 50%; }
+        #userName { margin: 10px 0; color: #333; font-weight: 500; }
+        .nav-links { margin-top: 10px; }
+        .nav-links a { margin: 0 10px; color: #667eea; text-decoration: none; }
+        .profile-section { text-align: center; padding: 20px; }
+        .profile-section img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; }
+        .profile-section .name { font-size: 24px; font-weight: bold; margin: 15px 0 5px; }
+        .profile-section .email { color: #666; margin-bottom: 20px; }
     </style>
 </head>
 <body>
-    <div class="container">
-<h1>🎨 AI 插图生成器</h1>
-    <div class="input-group">
-        <label for="prompt">描述你想要的图片：</label>
-        <input type="text" id="prompt" placeholder="例如：一只可爱的猫咪坐在彩虹上" onkeydown="if(event.key==='Enter')generateImage()">
+    <div class="container" id="mainContainer">
+        <!-- 首页内容 -->
+        <div id="homePage">
+            <h1>🎨 AI 插图生成器</h1>
+            <div class="input-group">
+                <label for="prompt">描述你想要的图片：</label>
+                <input type="text" id="prompt" placeholder="例如：一只可爱的猫咪坐在彩虹上" onkeydown="if(event.key==='Enter')generateImage()">
+            </div>
+            <button onclick="generateImage()" id="generateBtn">生成插图</button>
+            <div class="login-section">
+                <button onclick="loginWithGoogle()" class="login-btn" id="loginBtn">使用 Google 账号登录</button>
+            </div>
+            <div id="userInfo" style="display: none;">
+                <img id="userAvatar" src="" alt="用户头像">
+                <p id="userName"></p>
+                <div class="nav-links">
+                    <a href="#" onclick="showProfile()">📖 个人中心</a>
+                    <span>|</span>
+                    <a href="javascript:logout()">🚪 退出</a>
+                </div>
+            </div>
+<div id="result"></div>
+</div>
+    <!-- 个人中心内容 -->
+    <div id="profilePage" style="display: none;">
+        <h1>👤 个人中心</h1>
+        <div class="profile-section">
+            <img id="profileAvatar" src="" alt="头像">
+            <p id="profileName" class="name"></p>
+            <p id="profileEmail" class="email"></p>
+            <div>
+                <button onclick="showHome()" class="btn-small" style="background: #4CAF50;">🏠 返回首页</button>
+                <button onclick="logout()" class="btn-small" style="background: #f44336;">🚪 退出登录</button>
+            </div>
+        </div>
     </div>
-    
-    <button onclick="generateImage()" id="generateBtn">生成插图</button>
-    
-    <div class="login-section">
-        <button onclick="loginWithGoogle()" class="login-btn" id="loginBtn">
-            使用 Google 账号登录
-        </button>
-    </div>
-    
-    <div id="userInfo" style="display: none;">
-        <img id="userAvatar" src="" alt="用户头像">
-        <p id="userName"></p>
-        <button onclick="logout()" class="logout-btn">退出登录</button>
-    </div>
-    
-    <div id="result"></div>
 </div>
 <script>
+    // 检查登录状态
     window.onload = function() {
         const user = localStorage.getItem('user');
         if (user) {
@@ -190,7 +85,32 @@
         if (code) {
             handleAuthCallback(code);
         }
+        
+        // 检查是否显示个人中心
+        if (window.location.hash === '#profile') {
+            showProfile();
+        }
     };
+    
+    function showHome() {
+        document.getElementById('homePage').style.display = 'block';
+        document.getElementById('profilePage').style.display = 'none';
+    }
+    
+    function showProfile() {
+        const user = localStorage.getItem('user');
+        if (!user) {
+            alert('请先登录！');
+            return;
+        }
+        const userData = JSON.parse(user);
+        document.getElementById('profileAvatar').src = userData.picture || 'https://via.placeholder.com/100';
+        document.getElementById('profileName').textContent = userData.name || '未设置名字';
+        document.getElementById('profileEmail').textContent = userData.email || '';
+        
+        document.getElementById('homePage').style.display = 'none';
+        document.getElementById('profilePage').style.display = 'block';
+    }
     
     function loginWithGoogle() {
         window.location.href = '/api/auth';
@@ -223,30 +143,23 @@
         localStorage.removeItem('user');
         document.getElementById('userInfo').style.display = 'none';
         document.getElementById('loginBtn').style.display = 'block';
+        showHome();
     }
     
     async function generateImage() {
         const promptInput = document.getElementById('prompt');
         const resultDiv = document.getElementById('result');
         const btn = document.getElementById('generateBtn');
-        
         const prompt = promptInput.value.trim();
         
-        if (!prompt) {
-            alert('请输入文字描述！');
-            return;
-        }
-        
-        resultDiv.innerHTML = '<p class="loading">🎨 正在生成图片...</p>';
-        btn.disabled = true;
-        btn.textContent = '生成中...';
-        
+        if (!prompt) { alert('请输入文字描述！'); return; }
+resultDiv.innerHTML = '<p class="loading">🎨 正在生成图片...</p>';
+btn.disabled = true;
+btn.textContent = '生成中...';
         try {
             const encodedPrompt = encodeURIComponent(prompt);
             const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&nologo=true&seed=${Math.random()}`;
-            
             resultDiv.innerHTML = `<img src="${imageUrl}" alt="AI生成的图片" onload="onImageLoad()" onerror="onImageError()">`;
-            
         } catch (error) {
             resultDiv.innerHTML = `<p class="error">❌ 生成失败：${error.message}</p>`;
             btn.disabled = false;
@@ -255,16 +168,14 @@
     }
     
     function onImageLoad() {
-        const btn = document.getElementById('generateBtn');
-btn.disabled = false;
-btn.textContent = '生成插图';
-}
+        document.getElementById('generateBtn').disabled = false;
+        document.getElementById('generateBtn').textContent = '生成插图';
+    }
+    
     function onImageError() {
-        const resultDiv = document.getElementById('result');
-        const btn = document.getElementById('generateBtn');
-        resultDiv.innerHTML = '<p class="error">❌ 图片加载失败，请重试</p>';
-        btn.disabled = false;
-        btn.textContent = '生成插图';
+        document.getElementById('result').innerHTML = '<p class="error">❌ 图片加载失败，请重试</p>';
+        document.getElementById('generateBtn').disabled = false;
+        document.getElementById('generateBtn').textContent = '生成插图';
     }
 </script>
 </body>
