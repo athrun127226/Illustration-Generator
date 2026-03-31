@@ -58,9 +58,9 @@
         </div>
         <div id="profilePage" style="display: none;">
             <h1>👤 个人中心</h1>
-<div class="profile-section">
-<img id="profileAvatar" src="" alt="头像">
-<p id="profileName" class="name"></p>
+            <div class="profile-section">
+                <img id="profileAvatar" src="" alt="头像">
+                <p id="profileName" class="name"></p>
 <p id="profileEmail" class="email"></p>
 <div>
 <button onclick="showHome()" class="btn-small" style="background: #4CAF50;">🏠 返回首页</button>
@@ -86,8 +86,7 @@ const REDIRECT_URI = window.location.origin + '/';
             'client_id=' + CLIENT_ID +
             '&redirect_uri=' + encodeURIComponent(REDIRECT_URI) +
             '&response_type=token' +
-            '&scope=email profile openid' +
-            '&access_type=offline';
+            '&scope=email profile openid';
         window.location.href = authUrl;
     }
     
@@ -143,10 +142,10 @@ const REDIRECT_URI = window.location.origin + '/';
     async function generateImage() {
         const prompt = document.getElementById('prompt').value.trim();
         if (!prompt) { alert('请输入文字描述！'); return; }
-const resultDiv = document.getElementById('result');
-const btn = document.getElementById('generateBtn');
-resultDiv.innerHTML = '<p class="loading">🎨 正在生成图片...</p>';
-btn.disabled = true;
+        const resultDiv = document.getElementById('result');
+        const btn = document.getElementById('generateBtn');
+        resultDiv.innerHTML = '<p class="loading">🎨 正在生成图片...</p>';
+        btn.disabled = true;
 btn.textContent = '生成中...';
 try {
 const imageUrl = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt) + '?width=512&height=512&nologo=true&seed=' + Math.random();
